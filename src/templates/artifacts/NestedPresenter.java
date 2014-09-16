@@ -9,9 +9,9 @@ import com.google.gwt.event.shared.GwtEvent.Type;
 import com.gwtplatform.mvp.client.proxy.RevealContentHandler;
 @artifact.imports@
 
-public class @artifact.name@Presenter extends Presenter<@artifact.name@Presenter.MyView, @artifact.name@Presenter.MyProxy> {
+class @artifact.name@Presenter extends Presenter<@artifact.name@Presenter.MyView, @artifact.name@Presenter.MyProxy>@artifact.presenterImplements@ {
 
-    public interface MyView extends View {
+    public interface MyView extends View@artifact.viewImplements@ {
     }
 
 @artifact.proxy@
@@ -24,6 +24,7 @@ public class @artifact.name@Presenter extends Presenter<@artifact.name@Presenter
             final MyView view,
             final MyProxy proxy) {
         super(eventBus, view, proxy, @artifact.revealSlot@);
+        @artifact.initContent@
     }
 
 }

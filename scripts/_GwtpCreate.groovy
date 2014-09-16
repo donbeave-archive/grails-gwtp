@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.lang.reflect.Modifier
 
 /**
  * @author <a href='mailto:donbeave@gmail.com'>Alexey Zhokhov</a>
@@ -71,7 +72,7 @@ installFile = { File targetFile, File templateFile, Map tokens ->
         // the existing copy.
         ant.input(
                 addProperty: "${targetFile.name}.overwrite",
-                message: "GWT: ${targetFile.name} already exists. Overwrite? [y/n]")
+                message: "GWTP: ${targetFile.name} already exists. Overwrite? [y/n]")
 
         if (ant.antProject.properties."${targetFile.name}.overwrite" == 'n') {
             // User doesn't want to overwrite, so stop the script.
@@ -129,4 +130,112 @@ findNameTokens = {
     }
 
     classes
+}
+
+installGwtpPresenter = { modulePackage, moduleName, nameToken, revealType, codeSplit, uiHandlers ->
+    def mapping = ['artifact.imports'       : '', 'artifact.revealSlot': 'Root', 'artifact.presenterImplements': '',
+                   'artifact.viewImplements': '', 'artifact.initContent': '']
+
+    // use proxy place
+    boolean useToken = nameToken != null ? true : grailsConsole.userInput('Is a Place? ', ['y', 'n']) == 'y'
+
+    if (useToken) {
+        def tokenFiles = findNameTokens()
+
+        if (!tokenFiles) {
+            println 'NameTokens class not found.'
+            exit(1)
+        }
+
+        while (!nameToken) {
+            tokenFiles.each { tokenClass ->
+                List tokens = classLoader.loadClass(tokenClass, true).getDeclaredFields().findAll {
+                    Modifier.isStatic(it.getModifiers()) && it.genericType.typeName.equals('java.lang.String')
+                }.collect { it.name }
+                tokens << '->'
+
+                if (!nameToken) {
+                    nameToken = grailsConsole.userInput("[${tokenClass}] Select name token: ", tokens)
+
+                    if (nameToken.equals('->'))
+                        nameToken = null
+                }
+
+                if (nameToken)
+                    mapping.'artifact.imports' += "import ${tokenClass};\n"
+            }
+        }
+
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.annotations.NameToken;\n' +
+                'import com.gwtplatform.mvp.client.proxy.ProxyPlace;\n'
+    } else {
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.proxy.Proxy;\n'
+    }
+
+    // reveal type
+    if (revealType == null) {
+        mapping.'artifact.revealSlot' =
+                grailsConsole.userInput('Reveal In? ', ['Root', 'RootLayout', 'RootPopup', 'SLOT'])
+    }
+
+    if (mapping.'artifact.revealSlot'.equals('SLOT')) {
+        // TODO please select one slot from list
+        println 'Not implemented.'
+        exit(1)
+    } else {
+        mapping.'artifact.revealSlot' = "RevealType.${mapping.'artifact.revealSlot'}"
+    }
+
+    // UiHandlers
+    if (uiHandlers) {
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.HasUiHandlers;\n'
+        mapping.'artifact.presenterImplements' = " implements ${moduleName}UiHandlers"
+        mapping.'artifact.viewImplements' = ", HasUiHandlers<${moduleName}UiHandlers>"
+        mapping.'artifact.initContent' = 'getView().setUiHandlers(this);'
+    }
+
+    // code split
+    String proxyAnnotation = 'ProxyStandard'
+    if (codeSplit) {
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;'
+        proxyAnnotation = 'ProxyCodeSplit'
+    } else {
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.annotations.ProxyStandard;'
+    }
+
+    String proxy = (nameToken ? "    @NameToken(NameTokens.${nameToken})\n" : '') +
+            "    @${proxyAnnotation}\n" +
+            "    public interface MyProxy extends Proxy${useToken ? 'Place' : ''}<${moduleName}Presenter> {\n" +
+            '    }'
+
+    mapping.'artifact.proxy' = proxy
+
+    installGwtpTemplate("${modulePackage}.${moduleName.toLowerCase()}", moduleName, 'NestedPresenter.java',
+            "${moduleName}Presenter.java", mapping)
+}
+
+installGwtpView = { modulePackage, moduleName, uiHandlers ->
+    def mapping = ['artifact.imports': 'import com.gwtplatform.mvp.client.ViewImpl;',
+                   'artifact.extends': uiHandlers ? "ViewWithUiHandlers<${moduleName}UiHandlers>" : 'ViewImpl']
+
+    if (uiHandlers)
+        mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.ViewWithUiHandlers;'
+
+    installGwtpTemplate("${modulePackage}.${moduleName.toLowerCase()}", moduleName, 'View.java',
+            "${moduleName}View.java", mapping)
+}
+
+installGwtpViewUi = { modulePackage, moduleName ->
+    installGwtpTemplate("${modulePackage}.${moduleName.toLowerCase()}", moduleName, 'View.ui.xml',
+            "${moduleName}View.ui.xml")
+}
+
+installGwtpUiHandlers = { modulePackage, moduleName ->
+    installGwtpTemplate("${modulePackage}.${moduleName.toLowerCase()}", moduleName, 'UiHandlers.java',
+            "${moduleName}UiHandlers.java")
+}
+
+installGwtpModule = { modulePackage, moduleName ->
+    installGwtpTemplate("${modulePackage}.${moduleName.toLowerCase()}", moduleName, 'Module.java',
+            "${moduleName}Module.java")
 }
