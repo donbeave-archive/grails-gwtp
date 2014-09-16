@@ -27,7 +27,3 @@ grails.project.dependency.resolution = {
         }
     }
 }
-
-gwt {
-    version = '2.6.1'
-}
