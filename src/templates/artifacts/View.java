@@ -17,7 +17,7 @@ class @artifact.name@View extends @artifact.extends@ implements @artifact.name@P
     SimplePanel main;
 
     @Inject
-    @artifact.name@View(Binder uiBinder) {
+    @artifact.name@View(final Binder uiBinder) {
         initWidget(uiBinder.createAndBindUi(this));
     }
 

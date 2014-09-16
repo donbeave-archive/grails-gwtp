@@ -203,9 +203,9 @@ installGwtpPresenter = { modulePackage, moduleName, nameToken, revealType, codeS
         mapping.'artifact.imports' += 'import com.gwtplatform.mvp.client.annotations.ProxyStandard;'
     }
 
-    String proxy = (nameToken ? "    @NameToken(NameTokens.${nameToken})\n" : '') +
-            "    @${proxyAnnotation}\n" +
-            "    public interface MyProxy extends Proxy${useToken ? 'Place' : ''}<${moduleName}Presenter> {\n" +
+    String proxy = "    @${proxyAnnotation}\n" +
+            (nameToken ? "    @NameToken(NameTokens.${nameToken})\n" : '') +
+            "    interface MyProxy extends Proxy${useToken ? 'Place' : ''}<${moduleName}Presenter> {\n" +
             '    }'
 
     mapping.'artifact.proxy' = proxy
