@@ -4,6 +4,6 @@ grails-gwtp [![Build Status](https://travis-ci.org/donbeave/grails-gwtp.svg?bran
 Copyright and license
 ---------------------
 
-Copyright 2013-2014 Alexey Zhokhov under the [Apache License, Version 2.0](LICENSE). Supported by [Polusharie][polusharie].
+Copyright 2013-2014 Alexey Zhokhov under the [Apache License, Version 2.0](LICENSE). Supported by [AZ][zhokhov].
 
-[polusharie]: http://www.polusharie.com
+[zhokhov]: http://www.zhokhov.com
