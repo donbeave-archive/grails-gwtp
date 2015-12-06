@@ -1,5 +1,7 @@
-grails-gwtp [![Build Status](https://travis-ci.org/donbeave/grails-gwtp.svg?branch=master)](https://travis-ci.org/donbeave/grails-gwtp)
-===========
+# grails-gwtp
+
+[![Build Status](https://travis-ci.org/donbeave/grails-gwtp.svg?branch=master)](https://travis-ci.org/donbeave/grails-gwtp)
+[![Analytics](https://ga-beacon.appspot.com/UA-71075299-1/grails-gwtp/main-page)](https://github.com/igrigorik/ga-beacon)
 
 Copyright and license
 ---------------------
